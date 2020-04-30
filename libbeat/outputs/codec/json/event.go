@@ -40,7 +40,13 @@ type meta struct {
 	Fields  map[string]interface{} `struct:",inline"`
 }
 
-func makeEvent(index, version string, in *beat.Event) event {
+func makeEvent(index, version string, in *beat.Event) interface{} {
+	if value, err := in.Fields.GetValue("fields.origin"); err == nil {
+		if origin, ok := value.(bool); ok && origin {
+			in.Fields.Delete("fields")
+			return in.Fields
+		}
+	}
 	return event{
 		Timestamp: in.Timestamp,
 		Meta: meta{
