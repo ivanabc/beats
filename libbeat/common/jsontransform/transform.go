@@ -19,12 +19,13 @@ package jsontransform
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/elastic/beats/v7/libbeat/common"
 )
 
 // TransformNumbers walks a json decoded tree an replaces json.Number
-// with int64, float64, or string, in this order of preference (i.e. if it
+// with uint64, int64, float64, or string, in this order of preference (i.e. if it
 // parses as an int, use int. if it parses as a float, use float. etc).
 func TransformNumbers(dict common.MapStr) {
 	for k, v := range dict {
@@ -40,6 +41,10 @@ func TransformNumbers(dict common.MapStr) {
 }
 
 func transformNumber(value json.Number) interface{} {
+	u64, err := strconv.ParseUint(value.String(), 10, 64)
+	if err == nil {
+		return u64
+	}
 	i64, err := value.Int64()
 	if err == nil {
 		return i64
